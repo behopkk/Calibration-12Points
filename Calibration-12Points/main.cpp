@@ -299,12 +299,12 @@ int main(int argc, char *argv[])
 	/*开始对位*/
 	/*加载待测图像*/
 	char bmImagePathL[100], bmImagePathR[100],testImagePathL[100], testImagePathR[100];
-	sprintf_s(bmImagePathL, "E:\\dataset\\TEST-BD\\L\\L0.jpeg");
-	sprintf_s(bmImagePathR, "E:\\dataset\\TEST-BD\\R\\R0.jpeg");
-	//sprintf_s(testImagePathL, "E:\\dataset\\TEST-BD\\L\\L2.jpeg");
-	//sprintf_s(testImagePathR, "E:\\dataset\\TEST-BD\\R\\R2.jpeg");
-	sprintf_s(testImagePathL, "E:\\dataset\\TEST-BD\\L\\X1Y1.jpeg");
-	sprintf_s(testImagePathR, "E:\\dataset\\TEST-BD\\R\\X1Y1.jpeg");
+	sprintf_s(bmImagePathL, "E:\\dataset\\TEST-BD\\L\\L2.jpeg");
+	sprintf_s(bmImagePathR, "E:\\dataset\\TEST-BD\\R\\R2.jpeg");
+	sprintf_s(testImagePathL, "E:\\dataset\\TEST-BD\\L\\L2.jpeg");
+	sprintf_s(testImagePathR, "E:\\dataset\\TEST-BD\\R\\R2.jpeg");
+	//sprintf_s(testimagepathl, "e:\\dataset\\test-bd\\l\\x1y1.jpeg");
+	//sprintf_s(testimagepathr, "e:\\dataset\\test-bd\\r\\x1y1.jpeg");
 
 	Mat bmImageL = imread(bmImagePathL, 0);
 	Mat bmImageR = imread(bmImagePathR, 0);
@@ -413,22 +413,23 @@ int main(int argc, char *argv[])
 		uTCRotatePointRX - uTCRotatePointLX) * 180 / PI;
 	cout << "After Rotation 's Δθ is: " << testRotateTheta - bmTheta<< "°" << endl;
 
-	/*对位精度测试*/
-	Mat castImageL = Mat::zeros(Size(10000,10000),bmImageL.type());
-	Point2f currPointWorld;
-	for (int x = 0; x < testIL.cols; x++)
-	{
-		for (int y = 0; y < testIL.rows; y++)
-		{
-			if (testIL.at<uchar>(y,x)!=0)
-			{
-				currPointWorld = TransToWorldAxis(Point2f(x, y), H.L);
-				float value = testIL.at<uchar>(y, x);
-				castImageL.at<uchar>(currPointWorld.y + 2000, currPointWorld.x + 2000) = value;
-			}
-				
-		}
-	}
+
+	/*对位控制指令发出以及检测对位误差*/
+	
+
+	/*对位精度补偿*/
+	float deltaXEWorld = 0;
+	float deltaYEWorld = 0;
+	float rotateTheta = instruction.commandTheta;
+	float a = uniformTestCrossPointL.x;
+	float b = uniformTestCrossPointL.y;
+	float c = uTCRotatePointLX;
+	float d = uTCRotatePointLY;
+	float m = uniformCrossPointL.x + deltaXEWorld + instruction.commandX;
+	float n = uniformCrossPointL.y + deltaYEWorld + instruction.commandY;
+	//补偿之后的旋转中心世界坐标
+	float xW = (m + a) / 2 + (b - n)*sin(rotateTheta) / (2 * (1 - cos(rotateTheta)));
+	float yW = (n + b) / 2 + (1 + cos(rotateTheta))*(m - a) / (2 * sin(rotateTheta));
 
 
 	waitKey();
